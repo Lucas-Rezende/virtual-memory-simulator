@@ -20,6 +20,31 @@ unsigned calcular_shift_bits(int tamanho_pagina) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc != ARGS_ESPERADOS && argc != ARGS_COM_DEBUG) {
+        fprintf(stderr, "Uso: ./simulador <algoritmo> <arquivo.log> <tam_pagina_kb> <tam_memoria_kb> [debug]\n");
+        fprintf(stderr, "[1]: lru, random, lfu, etc\n");
+        fprintf(stderr, "[2]: Tamanho da página em memória, em KB");
+        fprintf(stderr, "[3]: Tamanho da memória, em KB");
+        fprintf(stderr, "[4]: Tamanho total da memória física disponível para o processo, em KB");
+        return 1;
+    }
+
+    char *algoritmo = argv[1];
+    char *inputFile = argv[2];
+    int tamanho_pagina_kb = atoi(argv[3]);
+    int tamanho_memoria_kb = atoi(argv[4]);
+
+    bool debug_mode = false;
+    if (argc == ARGS_COM_DEBUG && strcmp(argv[5], "debug") == 0) {
+        debug_mode = true;
+    }
+
+    FILE *f_in = fopen(inputFile, "r");
+    if (!f_in) {
+        fprintf(stderr, "Erro ao abrir o arquivo de log: %s\n", inputFile);
+        return 1;
+    }
+
     ReasonableRange pages_and_frames_range = {2, 64};
     ReasonableRange available_physic_memory_range = {128, 16384};
     bool is_reasonable_value = true;
