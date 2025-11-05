@@ -5,6 +5,20 @@
 
 #include <simulator.h>
 
+unsigned calcular_shift_bits(int tamanho_pagina) {
+    unsigned s, page_size, tmp;
+    page_size = tamanho_pagina;
+    tmp = page_size;
+    s = 0;
+
+    while (tmp > 1) {
+        tmp = tmp >> 1;
+        s++;
+    }
+
+    return s;
+}
+
 int main(int argc, char *argv[]) {
     ReasonableRange pages_and_frames_range = {2, 64};
     ReasonableRange available_physic_memory_range = {128, 16384};
