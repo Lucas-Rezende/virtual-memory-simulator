@@ -1,26 +1,30 @@
 CC = gcc
-TARGET = simulador
+CFLAGS = -g -Wall -Iinclude
+
 SRC_DIR = src
-INCLUDE_DIR = include
 OBJ_DIR = obj
-CFLAGS = -Wall -Wextra -Werror -g -I./include
+BIN_DIR = bin
 
-SOURCES = $(wildcard $(SRC_DIR)/*.c)
-OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-HEADERS = $(wildcard $(INCLUDE_DIR)/*.h)
+TARGET = $(BIN_DIR)/simulador
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-default: all
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
+$(TARGET): $(OBJS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	@echo "Pronto! Executável em $(TARGET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
-	@mkdir -p $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
-	rm -f $(TARGET)
-	rm -rf $(OBJ_DIR)
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
 
-.PHONY: all default clean run
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+.PHONY: all clean
