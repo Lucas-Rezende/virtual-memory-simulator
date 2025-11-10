@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "simulator.h"
 
@@ -42,25 +43,48 @@ int parse_arguments(int argc, char *argv[], Config *config) {
 
 // Inspirado no exemplo do doc, mas pode ser válido alterar para o relatório.
 void print_final_report(Config* config, Stats* stats) {
+    double percent_lidas = 0.0;
+    double percent_escritas = 0.0;
+
+    percent_lidas = ((double)stats->paginas_lidas / stats->total_acessos) * 100.0;
+    percent_escritas = ((double)stats->paginas_escritas / stats->total_acessos) * 100.0;
+
     printf("Executando o simulador...\n");
     printf("Arquivo de entrada: %s\n", config->arquivo_log);
     printf("Tamanho da memória: %d KB\n", config->tamanho_memoria_kb);
     printf("Tamanho das páginas: %d KB\n", config->tamanho_pagina_kb);
     printf("Técnica de reposição: %s\n", config->algoritmo_nome);
+    printf("--- Resultaldos ---\n");
     printf("Total de acessos: %ld\n", stats->total_acessos);
+
     printf("Páginas lidas: %ld\n", stats->paginas_lidas);
+    printf("Porcentagem páginas lidas: %.2f%%\n", percent_lidas);
+
     printf("Páginas escritas: %ld\n", stats->paginas_escritas);
+    printf("Porcentagem páginas escritas: %.2f%%\n", percent_escritas);
 }
 
 int main(int argc, char *argv[]) {
     Config config;
     Stats stats = {0, 0, 0};
+    long current_time = 0;
 
     if (parse_arguments(argc, argv, &config) != 0) {
         return ERROR;
     }
+    // Tipo de tabela
+    //config.tabela_id = PT_DENSE;
+    //config.max_adress_space = 1UL << (32 - config.shift_bits);
+
 
     // TODO: Add lógica do que deve ser feito a depender do algoritmo escolhido no input
+    srandom(time(NULL));
+
+    //PageTable *pt = init(&config);
+    //if (pt == NULL) {
+    //    fprintf(stderr, "Erro ao inicializar tabela");
+    //    return 1;
+    //}
 
     FILE *f_in = fopen(config.arquivo_log, "r");
     if (!f_in) {
@@ -87,6 +111,7 @@ int main(int argc, char *argv[]) {
         memoria_fisica[i].page_id = INVALID_PAGE;
         memoria_fisica[i].dirty_bit = false;
         memoria_fisica[i].last_access_time = 0;
+        memoria_fisica[i].frequency_count = 0;
     }
 
     unsigned addr;
@@ -97,10 +122,11 @@ int main(int argc, char *argv[]) {
     }
 
     while (fscanf(f_in, "%x %c", &addr, &rw) == 2) {
+        current_time++;
         stats.total_acessos++;
-        //unsigned page_number = addr >> config.shift_bits;
+        unsigned page_number = addr >> config.shift_bits;
 
-        // TODO: Lógica de acesso à memória e simulação
+        simular_acesso(memoria_fisica, &config, &stats, page_number, rw, current_time);
     }
 
     fclose(f_in);
@@ -108,5 +134,6 @@ int main(int argc, char *argv[]) {
     print_final_report(&config, &stats);
 
     free(memoria_fisica);
+    //free_table(pt);
     return 0;
 }
