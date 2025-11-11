@@ -1,8 +1,5 @@
 #include "simulator.h"
 
-/**
- * @brief Calcula quantidade de bits do offset
- */
 int calcular_shift_bits(int page_size_bytes) {
     int s = 0;
     unsigned tmp = (unsigned)page_size_bytes;
@@ -54,9 +51,6 @@ int mfu_page(Frame* memoria_fisica, int total_frames) {
     return victim;
 }
 
-/**
- * @brief Seleciona a página vítima com base no algoritmo.
- */
 int seleciona_quadro_vitima(Frame* memoria_fisica, Config* config, const char* algoritmo_nome) {
     if (strcmp(algoritmo_nome, "random") == 0) {
         return random_page(config->total_frames);
@@ -147,7 +141,6 @@ InvertedTable* init_inverted_table(Config* config) {
     InvertedTable* inv_table = (InvertedTable*) malloc(sizeof(InvertedTable));
     if (!inv_table) return NULL;
 
-    // Usamos o número de quadros como tamanho da tabela hash (comum)
     inv_table->num_buckets = config->total_frames;
     inv_table->buckets = (InvertedPageTableEntry**) 
         calloc(inv_table->num_buckets, sizeof(InvertedPageTableEntry*));
@@ -165,10 +158,6 @@ InvertedTable* init_inverted_table(Config* config) {
 
 
 // GERAIS
-
-/**
- * @brief Inicializa a estrutura da Tabela de Páginas.
- */
 PageTable* pt_init(Config *config) {
     PageTable* pt = (PageTable*) malloc(sizeof(PageTable));
     if (!pt) return NULL;
@@ -198,9 +187,6 @@ PageTable* pt_init(Config *config) {
     return pt;
 }
 
-/**
- * @brief Libera toda a memória alocada para a Tabela de Páginas.
- */
 void pt_free(PageTable *pt) {
     if (!pt) return;
     
@@ -260,9 +246,6 @@ void pt_free(PageTable *pt) {
     free(pt);
 }
 
-/**
- * @brief Encontra o quadro para uma página.
- */
 int pt_find_frame(PageTable* pt, unsigned page_number) {
     Config* config = pt->config;
 
@@ -317,9 +300,6 @@ int pt_find_frame(PageTable* pt, unsigned page_number) {
     return INVALID_FRAME; // MISS
 }
 
-/**
- * @brief Atualiza a tabela com um novo mapeamento.
- */
 void pt_update_mapping(PageTable* pt, unsigned page_number, int frame_number) {
     Config* config = pt->config;
 
@@ -338,7 +318,6 @@ void pt_update_mapping(PageTable* pt, unsigned page_number, int frame_number) {
             unsigned l2_index = page_number & config->l2_mask_h2;
 
             if (h2_table->l2_tables[l1_index] == NULL) {
-                // Aloca nova tabela L2
                 h2_table->l2_tables[l1_index] = (PageTableL2*) malloc(sizeof(PageTableL2));
                 long l2_size = 1L << config->l2_bits;
                 h2_table->l2_tables[l1_index]->total_entries = l2_size;
@@ -378,12 +357,10 @@ void pt_update_mapping(PageTable* pt, unsigned page_number, int frame_number) {
             InvertedTable* inv_table = (InvertedTable*) pt->data;
             unsigned long index = inverted_hash_func(inv_table, page_number);
             
-            // Cria nova entrada
             InvertedPageTableEntry* new_entry = (InvertedPageTableEntry*) malloc(sizeof(InvertedPageTableEntry));
             new_entry->page_id = page_number;
             new_entry->frame_number = frame_number;
             
-            // Adiciona no início da lista (balde)
             new_entry->next = inv_table->buckets[index];
             inv_table->buckets[index] = new_entry;
             break;
@@ -391,9 +368,6 @@ void pt_update_mapping(PageTable* pt, unsigned page_number, int frame_number) {
     }
 }
 
-/**
- * @brief Invalida um mapeamento.
- */
 void pt_invalidate_mapping(PageTable* pt, unsigned page_number) {
     if (page_number == INVALID_PAGE) return;
     Config* config = pt->config;
@@ -457,12 +431,8 @@ void pt_invalidate_mapping(PageTable* pt, unsigned page_number) {
     }
 }
 
-
 // SIMULAÇÃO
-
-/**
- * @brief Simula acessos únicos à memória.
- */
+// Acessos únicos
 void simular_acesso(
     PageTable* pt,
     Frame* memoria_fisica, 
@@ -499,10 +469,6 @@ void simular_acesso(
     }
 }
 
-/**
- * @brief Trata os Page Fault, seja encontrando uma nova vítima ou um quadro livre. 
- * @return O número do quadro (frame) que foi alocado.
- */
 int tratar_page_fault(
     PageTable* pt,
     Frame* memoria_fisica, 

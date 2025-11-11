@@ -22,14 +22,14 @@ typedef struct {
     bool bit_validade;
 } PageTableEntry;
 
-// --- Tabela Densa ---
+// Tabela Densa
 typedef struct {
     PageTableEntry *entries;
     long total_entries;
 } DensePageTable;
 
 // Tabela Hierárquica de 2 Níveis
-// Nível 2 (L2) - Aponta para os quadros
+// Nível 2 (L2)
 typedef struct {
     PageTableEntry *entries;
     long total_entries;
@@ -41,7 +41,7 @@ typedef struct {
 } Hierarchical2Table;
 
 // Tabela Hierárquica de 3 Níveis
-// Nível 3 (L3) - Aponta para os quadros
+// Nível 3 (L3)
 typedef struct {
     PageTableEntry *entries;
     long total_entries;
@@ -70,7 +70,6 @@ typedef struct {
     InvertedPageTableEntry **buckets;
     long num_buckets;
 } InvertedTable;
-
 
 // AUXILIARES
 typedef struct Config Config;
